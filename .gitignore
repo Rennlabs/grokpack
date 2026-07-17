@@ -1,0 +1,11 @@
+.omc/
+.grokprint/
+.grok/
+*.log
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.bak

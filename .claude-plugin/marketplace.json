@@ -1,0 +1,27 @@
+{
+  "name": "grokpack",
+  "owner": {
+    "name": "Renn Labs"
+  },
+  "metadata": {
+    "description": "Grok Build companion suite for Claude Code / OMC — observe, drive, display."
+  },
+  "plugins": [
+    {
+      "name": "grokprint",
+      "source": {
+        "source": "github",
+        "repo": "Rennlabs/grokprint"
+      },
+      "description": "Observe: turn-level orientation card (HAPPENED / ATTENTION / NEED). Observer-only."
+    },
+    {
+      "name": "grokdrive",
+      "source": {
+        "source": "github",
+        "repo": "Rennlabs/grokdrive"
+      },
+      "description": "Drive: Grok executes / Claude orchestrates, enforced by a PreToolUse gate."
+    }
+  ]
+}
