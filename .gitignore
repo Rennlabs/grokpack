@@ -1,6 +1,8 @@
 .omc/
+.omx/
 .grokprint/
 .grok/
+.buildlog/
 *.log
 .DS_Store
 *.swp

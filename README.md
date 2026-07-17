@@ -1,5 +1,8 @@
 # grokpack
 
+> **Unofficial** — not affiliated with xAI. Best-effort companion suite for the
+> Grok Build CLI; flags and component APIs may change without notice.
+
 **The Grok Build companion suite for Claude Code — observe, drive, display.**
 
 grokpack is a thin umbrella that installs and documents the Grok-Build-specific
@@ -38,7 +41,7 @@ Flags:
 The suite installer:
 
 1. Resolves each of `print` / `drive` via `GROKPACK_PRINT_DIR` / `GROKPACK_DRIVE_DIR`,
-   else a sibling under the parent of this tree (e.g. `~/repos/grokprint`),
+   else a sibling under the parent of this tree (e.g. a sibling `grokprint` checkout),
    else `git clone` from GitHub (`Rennlabs/grokprint`, `Rennlabs/grokdrive`).
 2. Runs that component's own `install.sh` (symlink + settings wiring stay owned
    by the component).
@@ -79,6 +82,12 @@ complements that layer; it does not replace or absorb it.
 `.claude-plugin/marketplace.json` lists the plugin-shaped components
 (grokprint, grokdrive) by GitHub source. **Draft — validate against the current
 Claude Code marketplace schema** before relying on marketplace install.
+
+## Publishing / launch
+
+Before publishing any component (or this umbrella), follow
+[`docs/PUBLIC_LAUNCH_CHECKLIST.md`](docs/PUBLIC_LAUNCH_CHECKLIST.md). Creating
+remotes, pushing, tagging, and making repos public are **human-gated**.
 
 ## License
 
