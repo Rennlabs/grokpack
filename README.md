@@ -17,10 +17,7 @@ are cross-model, not Grok-specific.
 |-|-|-|-|
 | **grokprint** | Observe | Turn-level orientation card (HAPPENED / ATTENTION / NEED) | [Rennlabs/grokprint](https://github.com/Rennlabs/grokprint) |
 | **grokdrive** | Drive | Grok executes / Claude orchestrates + PreToolUse gate | [Rennlabs/grokdrive](https://github.com/Rennlabs/grokdrive) |
-| **grok-hud** | Display | tmux status pane (`grok-hud`, `grok-with-hud`) | Vendored here (own repo TBD) |
-
-`grok-hud` has no standalone repo yet; grokpack vendors the bins under `hud/`
-until that lands.
+| **grok-hud** | Display | tmux status pane (`grok-hud`, `grok-with-hud`) | [Rennlabs/grok-hud](https://github.com/Rennlabs/grok-hud) |
 
 ## Install
 
@@ -40,13 +37,13 @@ Flags:
 
 The suite installer:
 
-1. Resolves each of `print` / `drive` via `GROKPACK_PRINT_DIR` / `GROKPACK_DRIVE_DIR`,
-   else a sibling under the parent of this tree (e.g. a sibling `grokprint` checkout),
-   else `git clone` from GitHub (`Rennlabs/grokprint`, `Rennlabs/grokdrive`).
+1. Resolves each of `print` / `drive` / `hud` via `GROKPACK_PRINT_DIR` /
+   `GROKPACK_DRIVE_DIR` / `GROKPACK_HUD_DIR`, else a sibling under the parent of
+   this tree (e.g. `~/repos/grokprint`, `~/repos/grokdrive`, `~/repos/grok-hud`),
+   else `git clone` from GitHub (`Rennlabs/grokprint`, `Rennlabs/grokdrive`,
+   `Rennlabs/grok-hud`).
 2. Runs that component's own `install.sh` (symlink + settings wiring stay owned
    by the component).
-3. For `hud`, symlinks the vendored bins into `~/.local/bin/` (idempotent; never
-   clobbers a non-grokpack file).
 
 If a clone fails (e.g. a component not published yet), that component is
 skipped with a WARN — the rest of the suite still installs.

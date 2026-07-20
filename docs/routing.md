@@ -12,7 +12,7 @@ orientation only — they are not part of this pack.
 | Tool | What it does |
 |-|-|
 | **grokprint** | After a tool-heavy Grok turn, glance at an orientation card (HAPPENED / ATTENTION / NEED FROM YOU) instead of scrolling the transcript. |
-| **grok-hud** / **grok-with-hud** | Persistent tmux status pane for the live Grok session. |
+| **grok-hud** / **grok-with-hud** | Persistent tmux status pane for the live Grok session ([Rennlabs/grok-hud](https://github.com/Rennlabs/grok-hud)). |
 
 Read-only. Neither tool drives agents or mutates project state. Reach for these
 when you want visibility without changing who does the work.

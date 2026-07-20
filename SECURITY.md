@@ -6,8 +6,7 @@
 Grok Build companion suite (grokprint, grokdrive, grok-hud). It:
 
 - Resolves sibling (or cloned) component repos and runs each component's own
-  `install.sh`
-- Symlinks vendored HUD bins into `~/.local/bin`
+  `install.sh` (print / drive / hud)
 - Ships a draft Claude Code marketplace manifest
 
 It does **not** run Grok itself, load credentials, or implement a PreToolUse

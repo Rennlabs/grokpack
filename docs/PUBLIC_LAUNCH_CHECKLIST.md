@@ -23,8 +23,8 @@ Run from each component repo root (and from grokpack for the umbrella):
 
 # Shell / JS syntax
 bash -n install.sh
-# plus any other shell scripts (bin/*, hud/*, etc.)
-find . -type f \( -name '*.sh' -o -path './bin/*' -o -path './hud/*' \) \
+# plus any other shell scripts (bin/*, etc.)
+find . -type f \( -name '*.sh' -o -path './bin/*' \) \
   ! -path './.git/*' -print0 | xargs -0 -r bash -n
 
 # Node hooks (when present)
