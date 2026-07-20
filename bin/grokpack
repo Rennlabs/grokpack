@@ -1,0 +1,388 @@
+#!/usr/bin/env bash
+# grokpack — suite CLI: install / update / status / doctor / uninstall
+set -euo pipefail
+
+_SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$_SOURCE" ]]; do
+  _DIR="$(cd -P "$(dirname "$_SOURCE")" && pwd)"
+  _SOURCE="$(readlink "$_SOURCE")"
+  [[ "$_SOURCE" != /* ]] && _SOURCE="$_DIR/$_SOURCE"
+done
+REPO_ROOT="$(cd -P "$(dirname "$_SOURCE")/.." && pwd)"
+unset _SOURCE _DIR
+
+# shellcheck source=../lib/install-common.sh
+source "$REPO_ROOT/lib/install-common.sh"
+
+VERSION_FILE="$REPO_ROOT/VERSION"
+VERSION="$(tr -d ' \n' <"$VERSION_FILE" 2>/dev/null || echo "0.2.0")"
+LOCK_FILE="${GROKPACK_LOCK:-$REPO_ROOT/grokpack.lock}"
+SIBLING_PARENT="$(dirname "$REPO_ROOT")"
+HOME_DIR="${HOME:?HOME not set}"
+
+PRINT_REPO="https://github.com/Rennlabs/grokprint.git"
+DRIVE_REPO="https://github.com/Rennlabs/grokdrive.git"
+HUD_REPO="https://github.com/Rennlabs/grok-hud.git"
+
+COMP_NAMES=(print drive hud)
+declare -A COMP_DIR_NAME=(
+  [print]=grokprint
+  [drive]=grokdrive
+  [hud]=grok-hud
+)
+declare -A COMP_REPO=(
+  [print]="$PRINT_REPO"
+  [drive]="$DRIVE_REPO"
+  [hud]="$HUD_REPO"
+)
+declare -A COMP_ENV=(
+  [print]=GROKPACK_PRINT_DIR
+  [drive]=GROKPACK_DRIVE_DIR
+  [hud]=GROKPACK_HUD_DIR
+)
+
+usage() {
+  cat <<EOF
+grokpack $VERSION — Grok Build companion suite (observe / drive / display)
+
+Usage:
+  grokpack install [--only print,drive,hud] [--force] [--dry-run]
+  grokpack update  [--only print,drive,hud] [--dry-run]
+  grokpack status
+  grokpack doctor
+  grokpack uninstall [--only print,drive,hud] [--dry-run]
+  grokpack version
+  grokpack help
+
+Env:
+  GROKPACK_PRINT_DIR / GROKPACK_DRIVE_DIR / GROKPACK_HUD_DIR  override component paths
+  GROKPACK_LOCK  path to lockfile (default: <repo>/grokpack.lock)
+
+Components resolve: env override → sibling under $(dirname "$REPO_ROOT") → git clone.
+Each component's own install.sh owns symlink + settings wiring.
+EOF
+}
+
+log() { gp_log "$@"; }
+warn() { gp_warn "$@"; }
+
+parse_only() {
+  local only="${1:-print,drive,hud}"
+  SELECTED=()
+  local _IFS="$IFS"
+  IFS=','
+  local c
+  for c in $only; do
+    c="${c// /}"
+    case "$c" in
+      print|drive|hud) SELECTED+=("$c") ;;
+      "") ;;
+      *) echo "grokpack: unknown component: $c" >&2; exit 2 ;;
+    esac
+  done
+  IFS="$_IFS"
+  [[ ${#SELECTED[@]} -gt 0 ]] || { echo "grokpack: no components selected" >&2; exit 2; }
+}
+
+# locate_existing: env → sibling only (no clone). For status/doctor/update.
+locate_existing() {
+  local name="$1"
+  local env_var="${COMP_ENV[$name]}"
+  local dir_name="${COMP_DIR_NAME[$name]}"
+  local override="${!env_var:-}"
+  local sibling="$SIBLING_PARENT/$dir_name"
+  LOCATED_DIR=""
+
+  if [[ -n "$override" ]]; then
+    if [[ -d "$override" && -f "$override/install.sh" ]]; then
+      LOCATED_DIR="$(cd -P "$override" && pwd)"
+      return 0
+    fi
+    return 1
+  fi
+  if [[ -d "$sibling" && -f "$sibling/install.sh" ]]; then
+    LOCATED_DIR="$(cd -P "$sibling" && pwd)"
+    return 0
+  fi
+  return 1
+}
+
+# locate_or_clone: existing, else clone (install path).
+locate_component() {
+  local name="$1"
+  local dir_name="${COMP_DIR_NAME[$name]}"
+  local clone_url="${COMP_REPO[$name]}"
+  local sibling="$SIBLING_PARENT/$dir_name"
+  LOCATED_DIR=""
+
+  if locate_existing "$name"; then
+    return 0
+  fi
+  # Only clone when env override was empty (locate_existing already failed override)
+  local env_var="${COMP_ENV[$name]}"
+  if [[ -n "${!env_var:-}" ]]; then
+    warn "$name: ${env_var}=${!env_var} has no install.sh — skip"
+    return 1
+  fi
+  if [[ "${DRY_RUN:-0}" -eq 1 ]]; then
+    log "[dry-run] would git clone $clone_url $sibling"
+    LOCATED_DIR="$sibling"
+    return 0
+  fi
+  log "clone: $clone_url → $sibling"
+  if git clone "$clone_url" "$sibling" 2>/dev/null && [[ -f "$sibling/install.sh" ]]; then
+    LOCATED_DIR="$(cd -P "$sibling" && pwd)"
+    return 0
+  fi
+  warn "$name: clone failed or install.sh missing — skip"
+  return 1
+}
+
+run_installer() {
+  local dir="$1"
+  shift
+  local flags=("$@")
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] would run $dir/install.sh ${flags[*]}"
+    return 0
+  fi
+  log "→ bash $dir/install.sh ${flags[*]}"
+  bash "$dir/install.sh" "${flags[@]}"
+}
+
+write_lock() {
+  local name="$1" dir="$2"
+  local ver sha
+  ver="$(gp_component_version "$dir")"
+  sha="$(gp_git_sha "$dir")"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] would pin $name=$ver@$sha in $LOCK_FILE"
+    return 0
+  fi
+  mkdir -p "$(dirname "$LOCK_FILE")"
+  # upsert line
+  python3 - "$LOCK_FILE" "$name" "$ver" "$sha" <<'PY'
+import sys
+from pathlib import Path
+path, name, ver, sha = sys.argv[1:5]
+p = Path(path)
+lines = []
+if p.exists():
+    lines = [ln for ln in p.read_text().splitlines() if ln.strip() and not ln.startswith(f"{name}=")]
+lines.append(f"{name}={ver}@{sha}")
+lines.sort()
+p.write_text("\n".join(lines) + "\n")
+print(f"  lock: {name}={ver}@{sha}")
+PY
+}
+
+cmd_install() {
+  local only="print,drive,hud" force_flags=()
+  DRY_RUN=0
+  FORCE=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --only) only="${2:-}"; shift 2 ;;
+      --force) FORCE=1; force_flags+=(--force); shift ;;
+      --dry-run) DRY_RUN=1; force_flags+=(--dry-run); shift ;;
+      -h|--help) usage; return 0 ;;
+      *) echo "unknown: $1" >&2; return 2 ;;
+    esac
+  done
+  parse_only "$only"
+  log "grokpack install $VERSION"
+  local c
+  for c in "${SELECTED[@]}"; do
+    if locate_component "$c"; then
+      if [[ "$DRY_RUN" -eq 1 && ! -d "${LOCATED_DIR:-}" ]]; then
+        log "  $c: would clone+install"
+        continue
+      fi
+      run_installer "$LOCATED_DIR" "${force_flags[@]}"
+      write_lock "$c" "$LOCATED_DIR"
+    else
+      log "  $c: skipped"
+    fi
+  done
+  log "done. Caveats: grokdrive needs a fresh Claude session; grokprint: Ctrl+L → Hooks → r"
+}
+
+cmd_update() {
+  local only="print,drive,hud"
+  DRY_RUN=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --only) only="${2:-}"; shift 2 ;;
+      --dry-run) DRY_RUN=1; shift ;;
+      -h|--help) usage; return 0 ;;
+      *) echo "unknown: $1" >&2; return 2 ;;
+    esac
+  done
+  parse_only "$only"
+  log "grokpack update $VERSION"
+  # also update suite itself if git
+  if [[ -d "$REPO_ROOT/.git" ]]; then
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      log "[dry-run] would git -C $REPO_ROOT pull --ff-only"
+    else
+      log "suite: git pull --ff-only"
+      git -C "$REPO_ROOT" pull --ff-only 2>&1 || warn "suite pull failed (ok if local-only)"
+    fi
+  fi
+  local c
+  for c in "${SELECTED[@]}"; do
+    if locate_existing "$c"; then
+      if [[ -d "$LOCATED_DIR/.git" ]]; then
+        if [[ "$DRY_RUN" -eq 1 ]]; then
+          log "[dry-run] would git -C $LOCATED_DIR pull --ff-only && reinstall"
+        else
+          log "  $c: pull $LOCATED_DIR"
+          git -C "$LOCATED_DIR" pull --ff-only 2>&1 || warn "$c pull failed"
+          bash "$LOCATED_DIR/install.sh" || warn "$c reinstall failed"
+        fi
+      else
+        warn "$c: no .git at $LOCATED_DIR — skip pull"
+      fi
+      write_lock "$c" "$LOCATED_DIR"
+      log "  $c: $(gp_component_version "$LOCATED_DIR")@$(gp_git_sha "$LOCATED_DIR")"
+    else
+      log "  $c: not installed / not found (run: grokpack install --only $c)"
+    fi
+  done
+  log "update done."
+}
+
+cmd_uninstall() {
+  local only="print,drive,hud"
+  DRY_RUN=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --only) only="${2:-}"; shift 2 ;;
+      --dry-run) DRY_RUN=1; shift ;;
+      *) echo "unknown: $1" >&2; return 2 ;;
+    esac
+  done
+  parse_only "$only"
+  local flags=(--uninstall)
+  [[ "$DRY_RUN" -eq 1 ]] && flags+=(--dry-run)
+  local c
+  for c in "${SELECTED[@]}"; do
+    if locate_existing "$c"; then
+      run_installer "$LOCATED_DIR" "${flags[@]}"
+    fi
+  done
+  # remove suite symlink if present
+  local bin="$HOME_DIR/.local/bin/grokpack"
+  if [[ -L "$bin" ]] && gp_points_into "$bin" "$REPO_ROOT"; then
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      log "[dry-run] rm $bin"
+    else
+      rm -f "$bin"
+      log "removed $bin"
+    fi
+  fi
+}
+
+cmd_status() {
+  printf 'grokpack %s  sha=%s\n' "$VERSION" "$(gp_git_sha "$REPO_ROOT")"
+  printf '%-10s %-12s %-10s %s\n' "COMP" "VERSION" "SHA" "PATH"
+  local c
+  for c in "${COMP_NAMES[@]}"; do
+    if locate_existing "$c"; then
+      printf '%-10s %-12s %-10s %s\n' "$c" "$(gp_component_version "$LOCATED_DIR")" "$(gp_git_sha "$LOCATED_DIR")" "$LOCATED_DIR"
+    else
+      printf '%-10s %-12s %-10s %s\n' "$c" "—" "—" "(not found)"
+    fi
+  done
+  # live mode hints
+  if command -v grokdrive >/dev/null 2>&1; then
+    echo "---"
+    grokdrive status 2>/dev/null || true
+  fi
+  if [[ -f "$LOCK_FILE" ]]; then
+    echo "--- lock ($LOCK_FILE) ---"
+    cat "$LOCK_FILE"
+  fi
+}
+
+cmd_doctor() {
+  local worst=0 rc
+  printf '=== grokpack doctor %s ===\n' "$VERSION"
+  printf '%-28s %s\n' "suite repo:" "$REPO_ROOT"
+  printf '%-28s %s\n' "git sha:" "$(gp_git_sha "$REPO_ROOT")"
+  printf '%-28s %s\n' "bin on PATH:" "$(command -v grokpack 2>/dev/null || echo MISSING)"
+  echo
+  local c
+  for c in "${COMP_NAMES[@]}"; do
+    echo "--- $c ---"
+    if locate_existing "$c"; then
+      printf '  path: %s\n' "$LOCATED_DIR"
+      printf '  version: %s@%s\n' "$(gp_component_version "$LOCATED_DIR")" "$(gp_git_sha "$LOCATED_DIR")"
+      if [[ -x "$LOCATED_DIR/install.sh" ]]; then
+        echo "  install.sh: OK"
+      else
+        echo "  install.sh: MISSING"; worst=1
+      fi
+      case "$c" in
+        print)
+          if command -v grokprint >/dev/null 2>&1; then
+            set +e
+            out="$(grokprint doctor 2>&1)"; rc=$?
+            set -e
+            printf '%s\n' "$out" | sed 's/^/  /'
+            [[ $rc -gt $worst ]] && worst=$rc
+          else
+            echo "  grokprint CLI: MISSING"; worst=1
+          fi
+          ;;
+        drive)
+          if command -v grokdrive >/dev/null 2>&1; then
+            set +e
+            out="$(grokdrive doctor 2>&1)"; rc=$?
+            set -e
+            printf '%s\n' "$out" | sed 's/^/  /'
+            [[ $rc -ne 0 ]] && worst=1
+          else
+            echo "  grokdrive CLI: MISSING"; worst=1
+          fi
+          ;;
+        hud)
+          if [[ -x "$LOCATED_DIR/install.sh" ]]; then
+            set +e
+            out="$(bash "$LOCATED_DIR/install.sh" --doctor 2>&1)"; rc=$?
+            set -e
+            printf '%s\n' "$out" | sed 's/^/  /'
+            [[ $rc -ne 0 ]] && worst=1
+          fi
+          command -v tmux >/dev/null 2>&1 || { echo "  tmux: MISSING"; worst=1; }
+          command -v python3 >/dev/null 2>&1 || { echo "  python3: MISSING"; worst=1; }
+          ;;
+      esac
+    else
+      echo "  not found / not installed"
+      worst=1
+    fi
+    echo
+  done
+  if [[ $worst -eq 0 ]]; then
+    echo "doctor: PASS"
+  else
+    echo "doctor: ISSUES (exit $worst)"
+  fi
+  return "$worst"
+}
+
+main() {
+  local sub="${1:-help}"
+  case "$sub" in
+    install) shift; cmd_install "$@" ;;
+    update) shift; cmd_update "$@" ;;
+    status|st) cmd_status ;;
+    doctor|dr) cmd_doctor ;;
+    uninstall) shift; cmd_uninstall "$@" ;;
+    version|-V|--version) echo "grokpack $VERSION ($(gp_git_sha "$REPO_ROOT"))" ;;
+    help|-h|--help|"") usage ;;
+    *) echo "unknown subcommand: $sub" >&2; usage >&2; exit 2 ;;
+  esac
+}
+main "$@"

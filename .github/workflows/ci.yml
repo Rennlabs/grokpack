@@ -14,7 +14,7 @@ jobs:
 
       - name: Syntax check (bash + JSON)
         run: |
-          bash -n install.sh
+          bash -n install.sh bin/grokpack lib/install-common.sh
           python3 -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
 
       - name: ShellCheck (severity=error)

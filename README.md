@@ -5,11 +5,10 @@
 
 **The Grok Build companion suite for Claude Code — observe, drive, display.**
 
-grokpack is a thin umbrella that installs and documents the Grok-Build-specific
-tools. Each component is its own repo; this pack is the front door — suite
-installer, plugin-marketplace manifest, and routing docs. It deliberately does
-**not** bundle multi-engine fuse/route tools (fleet-fuse, peer, etc.) — those
-are cross-model, not Grok-specific.
+grokpack is a thin umbrella that installs, updates, and documents the
+Grok-Build-specific tools. Each component is its own repo; this pack is the
+front door. It does **not** bundle multi-engine fuse/route tools (fleet-fuse,
+peer, etc.).
 
 ## The suite
 
@@ -24,35 +23,35 @@ are cross-model, not Grok-specific.
 ```bash
 git clone https://github.com/Rennlabs/grokpack.git
 cd grokpack
-./install.sh
+./install.sh                 # suite CLI + all components
+# or:
+./install.sh --only print,hud
+./install.sh --force         # backup foreign ~/.local/bin files first
+./install.sh --suite-only    # only the grokpack CLI
+./install.sh --dry-run
 ```
 
-Flags:
+After install, the suite CLI is on `PATH` (via `~/.local/bin/grokpack`):
 
-| Flag | Meaning |
-|-|-|
-| `--only print,drive,hud` | Install a subset (default = all three) |
-| `--dry-run` | Print intended actions; mutate nothing |
-| `--uninstall` | Reverse install for the selected components |
+```bash
+grokpack update              # pull + reinstall each component
+grokpack status              # versions, paths, gate state
+grokpack doctor              # aggregate health (exit = worst component)
+grokpack uninstall           # reverse component installs
+grokpack version
+```
 
-The suite installer:
+Resolution order per component: `GROKPACK_*_DIR` env → sibling under the parent
+of this tree (`~/repos/grokprint`, …) → `git clone` from `Rennlabs/*`.
 
-1. Resolves each of `print` / `drive` / `hud` via `GROKPACK_PRINT_DIR` /
-   `GROKPACK_DRIVE_DIR` / `GROKPACK_HUD_DIR`, else a sibling under the parent of
-   this tree (e.g. `~/repos/grokprint`, `~/repos/grokdrive`, `~/repos/grok-hud`),
-   else `git clone` from GitHub (`Rennlabs/grokprint`, `Rennlabs/grokdrive`,
-   `Rennlabs/grok-hud`).
-2. Runs that component's own `install.sh` (symlink + settings wiring stay owned
-   by the component).
+`grokpack.lock` pins component version@sha after install/update.
 
-If a clone fails (e.g. a component not published yet), that component is
-skipped with a WARN — the rest of the suite still installs.
-
-**Caveats after install:**
+**Caveats:**
 
 - grokdrive's gate arms only in Claude Code sessions started *after* install —
   start a fresh session, then `grokdrive on`.
 - grokprint hooks reload in Grok via **Ctrl+L → Hooks → r**.
+- If `~/.local/bin/grok-hud` is a plain file (old copy), use `./install.sh --force`.
 
 ## Which tool when?
 
@@ -68,23 +67,13 @@ Full map: [docs/routing.md](docs/routing.md).
 
 ## Where it sits
 
-**grokpack** is the Grok-Build companion layer for Claude Code / OMC: observe
-what Grok did, drive Grok under Claude's judgment, and display live status.
-Multi-engine orchestration (fleet-fuse / FrontierFuse / peer / cc-composer-grok)
-is a separate, cross-model layer that also happens to include Grok. grokpack
-complements that layer; it does not replace or absorb it.
+**grokpack** is the Grok-Build companion layer. Multi-engine orchestration
+(fleet-fuse / FrontierFuse / peer) is a separate, cross-model layer.
 
 ## Plugin install
 
-`.claude-plugin/marketplace.json` lists the plugin-shaped components
-(grokprint, grokdrive) by GitHub source. **Draft — validate against the current
-Claude Code marketplace schema** before relying on marketplace install.
-
-## Publishing / launch
-
-Before publishing any component (or this umbrella), follow
-[`docs/PUBLIC_LAUNCH_CHECKLIST.md`](docs/PUBLIC_LAUNCH_CHECKLIST.md). Creating
-remotes, pushing, tagging, and making repos public are **human-gated**.
+`.claude-plugin/marketplace.json` lists plugin-shaped components. **Draft —
+validate against the current Claude Code marketplace schema.**
 
 ## License
 
