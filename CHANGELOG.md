@@ -2,6 +2,10 @@
 
 ## [0.2.0] - 2026-07-20
 
+### Changed
+
+- Ignore local `grokpack.lock`; pre-public gate clean
+
 ### Added
 
 - Suite CLI `bin/grokpack`: `install` / `update` / `status` / `doctor` / `uninstall` / `version`
