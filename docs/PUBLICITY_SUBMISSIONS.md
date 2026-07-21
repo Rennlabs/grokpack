@@ -1,5 +1,8 @@
 # Publicity & inclusion — paste-ready copy
 
+**Maintenance / placement registry:** [PUBLICITY_REGISTRY.md](./PUBLICITY_REGISTRY.md) (where listed + how to update)  
+**Status checkboxes:** [PUBLICITY_TRACKER.md](./PUBLICITY_TRACKER.md)
+
 **Suite:** grokpack (observe / drive / display) · **Org:** Renn Labs · **License:** MIT  
 **Disclaimer (always include):** Unofficial — not affiliated with xAI or Anthropic.
 

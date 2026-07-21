@@ -1,49 +1,39 @@
-# Publicity tracker (local record)
+# Publicity tracker
 
-**Recorded:** 2026-07-20  
-**Updated:** 2026-07-20 (agent execution)  
-**Copy bank:** [PUBLICITY_SUBMISSIONS.md](./PUBLICITY_SUBMISSIONS.md)
+**Compendium (where + how to maintain):** [PUBLICITY_REGISTRY.md](./PUBLICITY_REGISTRY.md)  
+**Paste-ready copy:** [PUBLICITY_SUBMISSIONS.md](./PUBLICITY_SUBMISSIONS.md)  
+**Last status sweep:** 2026-07-20
 
-## Channels
+Mark channels when submitted/merged. Do not invent “done” without a real URL.
+
+## Status
 
 | # | Channel | Asset | Status | Date | Link / notes |
 |-|-|-|-|-|-|
-| 1 | Claude community marketplace | grokdrive | ☐ human | | Form + Anthropic account |
-| 2 | Official plugin form (clau.de) | grokdrive | ☐ human | | https://clau.de/plugin-directory-submission |
-| 3 | Own marketplace docs | Rennlabs/grokpack | ☑ | 2026-07-20 | README `/plugin marketplace add` |
-| 4 | awesome-claude-code (hesreallyhim) | grokpack | ☐ human form | | **Web UI issue form only** — not CLI. Draft: see PUBLICITY_SUBMISSIONS + below |
-| 5 | awesome-ai-coding-tools | grokpack | ☑ PR open | 2026-07-20 | https://github.com/ai-for-developers/awesome-ai-coding-tools/pull/562 |
-| 6 | awesome-tmux | grok-hud | ☑ PR open | 2026-07-20 | https://github.com/rothgar/awesome-tmux/pull/327 |
-| 7 | jqueryscript/awesome-claude-code | pack+drive | ☑ PR open | 2026-07-20 | https://github.com/jqueryscript/awesome-claude-code/pull/521 |
-| 8 | Show HN | grokpack | ☐ human | | |
-| 9 | r/ClaudeAI | pack post | ☐ human | | |
-| 10 | r/tmux | grok-hud | ☐ human | | |
-| 11 | X thread | 5 tweets | ☐ human | | |
-| 12 | Product Hunt | optional | ☐ blocked | | Needs email verify for grokpack@rennlabs.com |
-| 13 | PyPI | grokprint | ☐ blocked | | Needs email verify; passwords pre-staged in vault |
+| 1 | Claude community marketplace | grokdrive | ☐ HUMAN | | Anthropic account + form |
+| 2 | Official plugin form | grokdrive | ☐ HUMAN | | https://clau.de/plugin-directory-submission |
+| 3 | Own marketplace docs | pack | ☑ LIVE | 2026-07-20 | README `/plugin marketplace add` |
+| 4 | hesreallyhim/awesome-claude-code | pack | ☐ HUMAN form | | Web issue only — fields in REGISTRY §2.4 |
+| 5 | awesome-ai-coding-tools | pack | ☑ OPEN PR | 2026-07-20 | https://github.com/ai-for-developers/awesome-ai-coding-tools/pull/562 |
+| 6 | awesome-tmux | hud | ☑ OPEN PR | 2026-07-20 | https://github.com/rothgar/awesome-tmux/pull/327 |
+| 7 | jqueryscript/awesome-claude-code | pack+drive | ☑ OPEN PR | 2026-07-20 | https://github.com/jqueryscript/awesome-claude-code/pull/521 |
+| 8 | Show HN | pack | ☐ HUMAN | | Copy in SUBMISSIONS §6 |
+| 9 | r/ClaudeAI | pack | ☐ HUMAN | | SUBMISSIONS §7a |
+| 10 | r/tmux | hud | ☐ HUMAN | | SUBMISSIONS §7b |
+| 11 | X thread | suite | ☐ HUMAN | | SUBMISSIONS §8 |
+| 12 | Product Hunt | optional | ☐ BLOCKED | | Email verify; vault ready |
+| 13 | PyPI grokprint | optional | ☐ BLOCKED | | Email verify; vault ready |
 | 14 | pluginmarketplace.ai | optional | ☐ | | |
+
+## After a release — minimum maintenance
+
+1. Follow **PUBLICITY_REGISTRY.md §3 Update playbook**.  
+2. Sweep open PRs (`gh pr view …`); if **MERGED**, set status → LIVE and add registry changelog row.  
+3. If install one-liner or product name changed, open follow-up PRs only for **LIVE** lists with wrong blurb.  
+4. Append action to registry §7.
 
 ## Credentials (local only)
 
-- Email: `grokpack@rennlabs.com`
-- Secrets: `~/.config/rg-credentials/grokpack.env` (chmod 600, never commit)
-- Pointer: `/home/eglobal/repos/.launch-notes/grokpack-credentials.md`
-
-## awesome-claude-code (hesreallyhim) — human form fields
-
-Open: https://github.com/hesreallyhim/awesome-claude-code/issues/new?template=recommend-resource.yml
-
-- Display Name: `grokpack`
-- Category: `Multi-Agent Orchestration`
-- Link: `https://github.com/Rennlabs/grokpack`
-- Author Name: `Renn Labs`
-- Author Link: `https://github.com/Rennlabs`
-- Description: `Unofficial Grok Build companion suite for Claude Code: orientation card (observe), Grok-executes/Claude-orchestrates mode with PreToolUse gate (drive), and tmux status pane (display). MIT.`
-
-Second submission optional for grokdrive alone under Multi-Agent Orchestration.
-
-## Install one-liner
-
-```bash
-git clone https://github.com/Rennlabs/grokpack.git && cd grokpack && ./install.sh
-```
+- Email: `grokpack@rennlabs.com`  
+- Secrets: `~/.config/rg-credentials/grokpack.env` (chmod 600, never commit)  
+- Pointer: `~/repos/.launch-notes/grokpack-credentials.md`  

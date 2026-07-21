@@ -86,9 +86,14 @@ or by dropping the repo into a marketplace you control.
 
 ## Publishing / publicity
 
-- Launch gates: [`docs/PUBLIC_LAUNCH_CHECKLIST.md`](docs/PUBLIC_LAUNCH_CHECKLIST.md)
-- Paste-ready directory / marketplace / social copy: [`docs/PUBLICITY_SUBMISSIONS.md`](docs/PUBLICITY_SUBMISSIONS.md)
-- Submission checklist (mark when done): [`docs/PUBLICITY_TRACKER.md`](docs/PUBLICITY_TRACKER.md)
+| Doc | Use |
+|-|-|
+| [`docs/PUBLICITY_REGISTRY.md`](docs/PUBLICITY_REGISTRY.md) | **Go-to:** where we’re listed + how to update after releases |
+| [`docs/PUBLICITY_TRACKER.md`](docs/PUBLICITY_TRACKER.md) | Checkbox status of channels / PRs |
+| [`docs/PUBLICITY_SUBMISSIONS.md`](docs/PUBLICITY_SUBMISSIONS.md) | Paste-ready form / social / PR copy |
+| [`docs/PUBLIC_LAUNCH_CHECKLIST.md`](docs/PUBLIC_LAUNCH_CHECKLIST.md) | Pre-push quality gates |
+
+On every public release: run the **Update playbook** in the registry.
 
 ## License
 
