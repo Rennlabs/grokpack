@@ -75,6 +75,12 @@ Full map: [docs/routing.md](docs/routing.md).
 `.claude-plugin/marketplace.json` lists plugin-shaped components. **Draft —
 validate against the current Claude Code marketplace schema.**
 
+## Publishing / publicity
+
+- Launch gates: [`docs/PUBLIC_LAUNCH_CHECKLIST.md`](docs/PUBLIC_LAUNCH_CHECKLIST.md)
+- Paste-ready directory / marketplace / social copy: [`docs/PUBLICITY_SUBMISSIONS.md`](docs/PUBLICITY_SUBMISSIONS.md)
+- Submission checklist (mark when done): [`docs/PUBLICITY_TRACKER.md`](docs/PUBLICITY_TRACKER.md)
+
 ## License
 
 MIT © 2026 Renn Labs
