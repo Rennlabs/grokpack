@@ -238,3 +238,4 @@ git fetch upstream && git checkout <branch>
 - Launch checklist: [PUBLIC_LAUNCH_CHECKLIST.md](./PUBLIC_LAUNCH_CHECKLIST.md)  
 - Paste bank: [PUBLICITY_SUBMISSIONS.md](./PUBLICITY_SUBMISSIONS.md)  
 - Tracker: [PUBLICITY_TRACKER.md](./PUBLICITY_TRACKER.md)  
+- Multi-product marketing hub (FrontierFuse, shared playbook): `~/repos/marketing/`  
