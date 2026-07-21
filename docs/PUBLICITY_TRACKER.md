@@ -14,7 +14,7 @@
 | 4 | awesome-claude-code (hesreallyhim) | grokpack | ☐ human form | | **Web UI issue form only** — not CLI. Draft: see PUBLICITY_SUBMISSIONS + below |
 | 5 | awesome-ai-coding-tools | grokpack | ☑ PR open | 2026-07-20 | https://github.com/ai-for-developers/awesome-ai-coding-tools/pull/562 |
 | 6 | awesome-tmux | grok-hud | ☑ PR open | 2026-07-20 | https://github.com/rothgar/awesome-tmux/pull/327 |
-| 7 | jqueryscript/awesome-claude-code | pack+drive | ☑ PR open | 2026-07-20 | (see PR after create) |
+| 7 | jqueryscript/awesome-claude-code | pack+drive | ☑ PR open | 2026-07-20 | https://github.com/jqueryscript/awesome-claude-code/pull/521 |
 | 8 | Show HN | grokpack | ☐ human | | |
 | 9 | r/ClaudeAI | pack post | ☐ human | | |
 | 10 | r/tmux | grok-hud | ☐ human | | |
