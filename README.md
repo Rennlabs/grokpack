@@ -72,8 +72,17 @@ Full map: [docs/routing.md](docs/routing.md).
 
 ## Plugin install
 
-`.claude-plugin/marketplace.json` lists plugin-shaped components. **Draft —
-validate against the current Claude Code marketplace schema.**
+`.claude-plugin/marketplace.json` lists plugin-shaped components (grokprint,
+grokdrive). **Draft — validate against the current Claude Code marketplace
+schema** before relying on it.
+
+```text
+# Claude Code — add this suite as a marketplace (when schema is validated)
+/plugin marketplace add Rennlabs/grokpack
+```
+
+Standalone plugin-shaped install still works via each component's `./install.sh`
+or by dropping the repo into a marketplace you control.
 
 ## Publishing / publicity
 
